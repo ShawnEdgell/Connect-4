@@ -41,7 +41,6 @@ h1, p {
   justify-content: center;
   font-size: 24px;
   cursor: pointer;
-  transition: all 0.4s ease-in-out;
 }
 
 .connect4-cell:hover {
@@ -52,7 +51,6 @@ h1, p {
   text-align: center;
   margin-top: 20px;
   font-weight: bold;
-  transition: color 0.4s ease-in-out;
 }
 
 .player-label[data-player='1'] {
@@ -74,7 +72,6 @@ h1, p {
   justify-content: center;
   align-items: center;
   z-index: 1000;
-  transition: opacity 0.4s ease-in-out;
 }
 
 .modal-content {
@@ -83,7 +80,6 @@ h1, p {
   border-radius: 5px;
   text-align: center;
   transform: scale(0.7);
-  transition: transform 0.4s ease-in-out;
 }
 
 .modal[data-active='true'] .modal-content {
@@ -105,7 +101,6 @@ h1, p {
   border-radius: 5px;
   font-size: 16px;
   cursor: pointer;
-  transition: background-color 0.4s ease-in-out;
 }
 
 .new-game-button:hover {
