@@ -113,7 +113,7 @@ h1, p {
 }
 
 /* Optional media queries for responsiveness */
-@media (max-width: 600px) {
+@media (max-width: 767px) {
   .connect4-board {
     grid-template-columns: repeat(7, 40px);
   }
@@ -121,5 +121,8 @@ h1, p {
   .connect4-cell {
     width: 40px;
     height: 40px;
+  }
+  .connect4-cell:hover {
+    background-color: none;
   }
 }
