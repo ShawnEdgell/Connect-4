@@ -1,187 +1,78 @@
-<!-- src/App.svelte -->
 <script>
-  // Define the game board (6 rows, 7 columns)
+  import { fly } from 'svelte/transition';
+
   const ROWS = 6;
   const COLUMNS = 7;
-
-  // Initialize the game board as a 2D array with null values
+  const PLAYER_1 = '⚫️';
+  const PLAYER_2 = '🔴';
+  
   let board = Array.from({ length: ROWS }, () => Array(COLUMNS).fill(null));
-
-  // Define constants for players
-  const PLAYER_1 = '⚫️'; // Black circle emoji for user
-  const PLAYER_2 = '🔴'; // Red circle emoji for AI
-
-  // Initialize the current player (start with Player 1)
   let currentPlayer = PLAYER_1;
+  
+  $: isGameOver = checkWin(currentPlayer) || board.flat().every(cell => cell);
+  $: gameOverMessage = isGameOver ? (checkWin(currentPlayer) ? `Player ${currentPlayer === PLAYER_1 ? 1 : 2} wins!` : "It's a draw!") : '';
 
-  // Function to handle a player's move when they click a column
+  function checkWin(player) {
+    const directions = [
+      [0, 1], // Horizontal
+      [1, 0], // Vertical
+      [1, 1], // Diagonal right
+      [1, -1] // Diagonal left
+    ];
+    return directions.some(([rowDelta, colDelta]) => 
+      board.some((_, rowIndex) => 
+        board[0].some((_, colIndex) => 
+          checkDirection(rowIndex, colIndex, rowDelta, colDelta, player)
+        )
+      )
+    );
+  }
+
+  function checkDirection(row, col, rowDelta, colDelta, player) {
+    return Array(4).fill(0).every((_, i) => {
+      const r = row + i * rowDelta;
+      const c = col + i * colDelta;
+      return r >= 0 && r < ROWS && c >= 0 && c < COLUMNS && board[r][c] === player;
+    });
+  }
+
   function handlePlayerMove(column) {
-    // Find the lowest empty row in the selected column
-    for (let row = ROWS - 1; row >= 0; row--) {
-      if (board[row][column] === null) {
-        board[row][column] = currentPlayer;
-
-        // Check if the current player has won
-        if (checkWin(currentPlayer)) {
-          setTimeout(() => {
-            alert(`Player ${currentPlayer === PLAYER_1 ? 1 : 2} wins!`);
-            resetGame();
-          }, 500);
-        } else if (board.flat().every(cell => cell !== null)) {
-          // Check for a draw
-          setTimeout(() => {
-            alert("It's a draw!");
-            resetGame();
-          }, 500);
-        } else {
-          // Switch to the next player
-          currentPlayer = currentPlayer === PLAYER_1 ? PLAYER_2 : PLAYER_1;
-          if (currentPlayer === PLAYER_2) {
-            // It's the AI's turn, so simulate its move with a delay
-            setTimeout(simulateAIMove, 500);
-          }
-        }
-
-        break;
-      }
+    const row = findEmptyRow(column);
+    if (row !== -1) {
+      board[row][column] = currentPlayer;
+      if (!isGameOver) switchPlayer();
     }
   }
 
-  // Function to reset the game
+  function findEmptyRow(column) {
+    for (let row = ROWS - 1; row >= 0; row--) {
+      if (board[row][column] === null) return row;
+    }
+    return -1;
+  }
+
   function resetGame() {
     board = Array.from({ length: ROWS }, () => Array(COLUMNS).fill(null));
     currentPlayer = PLAYER_1;
   }
 
-  // Function to simulate the AI's move (random move)
+  function switchPlayer() {
+    currentPlayer = currentPlayer === PLAYER_1 ? PLAYER_2 : PLAYER_1;
+    if (currentPlayer === PLAYER_2) setTimeout(simulateAIMove, 500);
+  }
+
   function simulateAIMove() {
-    let emptyColumns = [];
-    for (let col = 0; col < COLUMNS; col++) {
-      if (board[0][col] === null) {
-        emptyColumns.push(col);
-      }
-    }
-
-    if (emptyColumns.length === 0) return; // No valid moves
-
-    // Choose a random column for the AI's move
+    const emptyColumns = getEmptyColumns();
+    if (!emptyColumns.length) return;
     const randomColumn = emptyColumns[Math.floor(Math.random() * emptyColumns.length)];
     handlePlayerMove(randomColumn);
   }
 
-  // Function to check for a win
-  function checkWin(player) {
-    // Implement your winning condition logic here
-    // Return true if the player has won, otherwise return false
-    // You can check horizontally, vertically, and diagonally
-    // Example implementation: checkHorizontal, checkVertical, checkDiagonal functions
-    // Return true if any of these functions returns true
-    return (
-      checkHorizontal(player) ||
-      checkVertical(player) ||
-      checkDiagonal(player)
-    );
-  }
-
-  function checkHorizontal(player) {
-    // Implement horizontal win condition logic here
-    // Return true if the player has 4 in a row horizontally, otherwise return false
-    // Example implementation:
-    for (let row = 0; row < ROWS; row++) {
-      for (let col = 0; col <= COLUMNS - 4; col++) {
-        if (
-          board[row][col] === player &&
-          board[row][col + 1] === player &&
-          board[row][col + 2] === player &&
-          board[row][col + 3] === player
-        ) {
-          return true;
-        }
-      }
-    }
-    return false;
-  }
-
-  function checkVertical(player) {
-    // Implement vertical win condition logic here
-    // Return true if the player has 4 in a row vertically, otherwise return false
-    // Example implementation:
-    for (let col = 0; col < COLUMNS; col++) {
-      for (let row = 0; row <= ROWS - 4; row++) {
-        if (
-          board[row][col] === player &&
-          board[row + 1][col] === player &&
-          board[row + 2][col] === player &&
-          board[row + 3][col] === player
-        ) {
-          return true;
-        }
-      }
-    }
-    return false;
-  }
-
-  function checkDiagonal(player) {
-    // Implement diagonal win condition logic here
-    // Return true if the player has 4 in a row diagonally, otherwise return false
-    // Example implementation (from top-left to bottom-right):
-    for (let row = 0; row <= ROWS - 4; row++) {
-      for (let col = 0; col <= COLUMNS - 4; col++) {
-        if (
-          board[row][col] === player &&
-          board[row + 1][col + 1] === player &&
-          board[row + 2][col + 2] === player &&
-          board[row + 3][col + 3] === player
-        ) {
-          return true;
-        }
-      }
-    }
-    // Example implementation (from top-right to bottom-left):
-    for (let row = 0; row <= ROWS - 4; row++) {
-      for (let col = 3; col < COLUMNS; col++) {
-        if (
-          board[row][col] === player &&
-          board[row + 1][col - 1] === player &&
-          board[row + 2][col - 2] === player &&
-          board[row + 3][col - 3] === player
-        ) {
-          return true;
-        }
-      }
-    }
-    return false;
+  function getEmptyColumns() {
+    return board[0].map((cell, col) => (cell === null ? col : null)).filter(col => col !== null);
   }
 </script>
 
-<style>
-
-  .connect4-board {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    max-width: 400px;
-    margin: 0 auto;
-  }
-
-  .connect4-cell {
-    width: 60px;
-    height: 60px;
-    background-color: #dddddd;
-    border: 2px solid #999999;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 24px;
-    cursor: pointer;
-  }
-
-  .connect4-cell:hover {
-    background-color: #aaaaaa;
-  }
-</style>
-
-
-<!-- src/App.svelte -->
 <div class="header">
   <h1>Connect Four</h1>
   <p>Connect 4 pieces in a row to win!</p>
@@ -195,12 +86,12 @@
           <button
             class="connect4-cell"
             on:click={() => handlePlayerMove(columnIndex)}
-            disabled={row[columnIndex] !== null}
+            disabled={row[columnIndex] !== null || isGameOver}
           >
             {#if row[columnIndex] === PLAYER_1}
-              ⚫️
+              <span in:fly={{ y: -100, duration: 300 }}>{PLAYER_1}</span>
             {:else if row[columnIndex] === PLAYER_2}
-              🔴
+              <span in:fly={{ y: -100, duration: 300 }}>{PLAYER_2}</span>
             {/if}
           </button>
         {/each}
@@ -208,3 +99,24 @@
     {/each}
   </div>
 </div>
+
+<div class="player-label">
+  {#if !isGameOver}
+    {#if currentPlayer === PLAYER_1}
+      Player 1's turn (⚫️)
+    {:else}
+      Player 2's turn (🔴)
+    {/if}
+  {/if}
+</div>
+
+<div class="modal" style={isGameOver ? 'display: flex;' : 'display: none;'}>
+  <div class="modal-content">
+    <p class="game-over-message">{gameOverMessage}</p>
+    <button class="new-game-button" on:click={resetGame}>New Game</button>
+  </div>
+</div>
+
+<style>
+  /* Add your styling here */
+</style>
