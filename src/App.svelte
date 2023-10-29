@@ -1,14 +1,13 @@
 <script>
-  import { fly } from 'svelte/transition';
-
+  
   const ROWS = 6;
   const COLUMNS = 7;
   const PLAYER_1 = '⚫️';
   const PLAYER_2 = '🔴';
-  
+
   let board = Array.from({ length: ROWS }, () => Array(COLUMNS).fill(null));
   let currentPlayer = PLAYER_1;
-  
+
   $: isGameOver = checkWin(currentPlayer) || board.flat().every(cell => cell);
   $: gameOverMessage = isGameOver ? (checkWin(currentPlayer) ? `Player ${currentPlayer === PLAYER_1 ? 1 : 2} wins!` : "It's a draw!") : '';
 
@@ -89,9 +88,9 @@
             disabled={row[columnIndex] !== null || isGameOver}
           >
             {#if row[columnIndex] === PLAYER_1}
-              <span in:fly={{ y: -100, duration: 300 }}>{PLAYER_1}</span>
+              <span>{PLAYER_1}</span>
             {:else if row[columnIndex] === PLAYER_2}
-              <span in:fly={{ y: -100, duration: 300 }}>{PLAYER_2}</span>
+              <span>{PLAYER_2}</span>
             {/if}
           </button>
         {/each}
